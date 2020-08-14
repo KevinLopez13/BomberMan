@@ -30,6 +30,9 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             /**Caracter que se ignorara del contenedor en bruto*/
             char charToIgnore;
 
+            /**Booleano que indica si el esprite esta visible o no.*/
+            bool visible = false;
+
             /**
              * @brief Método que se encarga de leer un archivo y cargar al contendor el sprite.
              * @param n Tamaño de la matriz que contiene al sprite.
@@ -67,6 +70,12 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @param view Si se muesta el sprite o se oculta.
              */
             void visualize(EGE::STD::TERMINAL::WINDOWS::Position coordinates,bool view = true);
+
+            /**
+             * @brief Método que devuelve el estado de visibilidad del sprite.
+             * @return Booleano que indica la visibilidad del sprite.
+             */
+            bool isVisible();
 
             /**
              * @brief Método que devuelve el tamaño del vector que contiene a sprite.

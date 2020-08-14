@@ -79,16 +79,21 @@ namespace EGE::STD::TERMINAL::WINDOWS{
     void Sprite::visualize(EGE::STD::TERMINAL::WINDOWS::Position coordinates,bool view){
         auto positionsVector = coordinates.getPosition();
         EGE::STD::TERMINAL::WINDOWS::Terminal *cursor = EGE::STD::TERMINAL::WINDOWS::Terminal::getTerminal();
+        visible = view;
 
         for(int i=0; i<this -> getSizeSprite(); i++){
             cursor -> gotoxy(std::get<0>(positionsVector[i]),std::get<1>(positionsVector[i]));
 
-            if(view){
+            if(visible){
                 std::cout << this -> sprite[i].getPixel();
             }else{
                 std::cout << " ";
             }
         }
+    }
+
+    bool Sprite::isVisible(){
+        return visible;
     }
 
     int Sprite::getSizeSprite(){
