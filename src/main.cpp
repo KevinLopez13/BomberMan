@@ -1,4 +1,6 @@
 #include <iostream>
+//#include <thread>
+
 #include <core/Core.hpp>
 
 #include <std/Windows/WindowsTerminal.tpp>
@@ -11,6 +13,7 @@
 #include <std/Windows/displacementEntity.tpp>
 #include <std/Windows/systemGenericCollition.tpp>
 #include <std/Windows/systemKeyInverter.tpp>
+
 
 /*Clase tablero y su administrador.*/
 class tablero :public EGE::CORE::Entity<tablero>{
@@ -26,7 +29,33 @@ class bomba : public EGE::CORE::Entity<bomba>{
         bomba(int id) : Entity(id){}
 };
 
-class managerBomba : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomba>{};
+class managerBomba : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomba>{
+    private:
+        int bombas[3];
+    public:
+        void createBombs(){
+            for( int i = 0; i < 3; i++ ){
+                bombas[i] = this -> addEntity();
+                this -> spriteInitializer(bombas[i],3,"bomba");
+            }
+        }
+
+        int getAvailableBomb(){
+            for( auto id : bombas ){
+                auto sprite = this -> template getComponent<EGE::STD::TERMINAL::WINDOWS::Sprite>( id );
+                if( !sprite->isVisible() ){
+                    return id;
+                }
+            }
+            return -1;
+        }
+
+        void explodeBomb( int bomb, EGE::STD::TERMINAL::WINDOWS::visualizeEntity<managerBomba> *viewBomba ){
+            viewBomba->update( bomb, this);
+            Sleep(1000);
+            viewBomba->update( bomb, this, false);
+        }
+};
 
 /*Clase bomberMan y su administrador.*/
 class bomberMan : public EGE::CORE::Entity<bomberMan>{
@@ -49,6 +78,7 @@ int main(){
     /*Creamos a las entidades*/
     auto tablero = mTablero.addEntity();
     auto bomberman = mBomberMan.addEntity();
+    mBomba.createBombs();
 
     /*Agregamos e inicializamos sus componentes*/
     mTablero.spriteInitializer(tablero,21,"tablero");
@@ -88,6 +118,7 @@ int main(){
         char lastKey;
         /*Recogemos la tecla*/
         Tecla = entrada.update();
+
         for(int i = 0; i < 4; i++){
             if( Tecla == teclasMovimiento[i] ){
                 lastKey = Tecla;
@@ -103,12 +134,12 @@ int main(){
                 dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
             }
             else if(Tecla == 'e' || Tecla == 'E'){
-                //auto bm = mBomberMan -> template getEntity<bomberMan>( bomberman );
                 auto position = mBomberMan.getComponent<EGE::STD::TERMINAL::WINDOWS::Position>(bomberman);
                 auto firstPosition = position -> getFirstPosition();
             
                 int x = std::get<0>(*firstPosition);
                 int y = std::get<1>(*firstPosition);
+                
                 
                 switch (lastKey){
                     case UP:
@@ -124,10 +155,12 @@ int main(){
                         x -= 3;
                         break;
                 }
-                auto bomba = mBomba.addEntity();
-                mBomba.spriteInitializer(bomba,3,"bomba");
-                mBomba.positionInitializer(bomba, x, y);
-                viewBomba.update(bomba, &mBomba);
+                auto availableBomb = mBomba.getAvailableBomb();
+                if( availableBomb != -1 ){
+                    mBomba.positionInitializer(availableBomb, x, y);
+                    //std::thread t1( mBomba.explodeBomb, availableBomb, &viewBomba );
+                    mBomba.explodeBomb( availableBomb, &viewBomba );
+                }
             }
         }
         #endif
