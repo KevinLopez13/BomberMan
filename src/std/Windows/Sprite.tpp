@@ -79,12 +79,11 @@ namespace EGE::STD::TERMINAL::WINDOWS{
     void Sprite::visualize(EGE::STD::TERMINAL::WINDOWS::Position coordinates,bool view){
         auto positionsVector = coordinates.getPosition();
         EGE::STD::TERMINAL::WINDOWS::Terminal *cursor = EGE::STD::TERMINAL::WINDOWS::Terminal::getTerminal();
-        visible = view;
 
         for(int i=0; i<this -> getSizeSprite(); i++){
             cursor -> gotoxy(std::get<0>(positionsVector[i]),std::get<1>(positionsVector[i]));
 
-            if(visible){
+            if(view){
                 std::cout << this -> sprite[i].getPixel();
             }else{
                 std::cout << " ";
@@ -92,8 +91,20 @@ namespace EGE::STD::TERMINAL::WINDOWS{
         }
     }
 
-    bool Sprite::isVisible(){
-        return visible;
+    void Sprite::visualizeColor(EGE::STD::TERMINAL::WINDOWS::Position coordinates, unsigned short  color,bool view){
+        auto positionsVector = coordinates.getPosition();
+        EGE::STD::TERMINAL::WINDOWS::Terminal *cursor = EGE::STD::TERMINAL::WINDOWS::Terminal::getTerminal();
+
+        for(int i=0; i<this -> getSizeSprite(); i++){
+            cursor -> gotoxy(std::get<0>(positionsVector[i]),std::get<1>(positionsVector[i]));
+
+            if(view){
+                cursor ->setColor(color);
+                std::cout << this -> sprite[i].getPixel(); 
+            }else{
+                std::cout << " ";
+            }
+        }
     }
 
     int Sprite::getSizeSprite(){
@@ -106,6 +117,14 @@ namespace EGE::STD::TERMINAL::WINDOWS{
 
     std::vector<Pixel> Sprite::getSprite(){
         return this -> sprite;
+    }
+
+    void Sprite::editSprite(std::vector<Pixel> newSprite){
+        this -> sprite.clear();
+
+        for(auto i: newSprite){
+            this -> sprite.push_back(i);
+        }
     }
 
     template<typename mType>

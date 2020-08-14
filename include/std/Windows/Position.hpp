@@ -64,7 +64,7 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @brief Método que retorna la posición inicial en la terminal.
              * @return Tupla con la posición inicial en terminal.
              */
-            std::tuple<int,int> *getFirstPosition();
+            std::tuple<int,int> *getFisrtPosition();
 
             /**
              * @brief Método para actualizar la posisición a la entidad.

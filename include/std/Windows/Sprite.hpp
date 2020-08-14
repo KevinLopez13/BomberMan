@@ -30,9 +30,6 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             /**Caracter que se ignorara del contenedor en bruto*/
             char charToIgnore;
 
-            /**Booleano que indica si el esprite esta visible o no.*/
-            bool visible = false;
-
             /**
              * @brief Método que se encarga de leer un archivo y cargar al contendor el sprite.
              * @param n Tamaño de la matriz que contiene al sprite.
@@ -65,17 +62,19 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             void spriteInitializer(EGE::CORE::EntityId n, std::string name, char charToIgnore);
 
             /**
-             * @brief Método que se encarga de visualizar al sprite.
+             * @brief Método que se encarga de visualizar al sprite con colores por default.
              * @param coordinates Sera de donde se saquen las coordenadas para el gotoxy.
              * @param view Si se muesta el sprite o se oculta.
              */
             void visualize(EGE::STD::TERMINAL::WINDOWS::Position coordinates,bool view = true);
 
             /**
-             * @brief Método que devuelve el estado de visibilidad del sprite.
-             * @return Booleano que indica la visibilidad del sprite.
+             * @brief Método que se encarga de visualizar al sprite con el colro que quieras.
+             * @param coordinates Sera de donde se saquen las coordenadas para el gotoxy.
+             * @param color Color que quieras que tenga el sprite.
+             * @param view Si se muesta el sprite o se oculta.
              */
-            bool isVisible();
+            void visualizeColor(EGE::STD::TERMINAL::WINDOWS::Position coordinates, unsigned short  color,bool view = true);
 
             /**
              * @brief Método que devuelve el tamaño del vector que contiene a sprite.
@@ -94,6 +93,12 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @return Vector de tipo sprite.
              */
             std::vector<Pixel> getSprite();
+
+            /**
+             * @brief Método que permite modificar el sprite de la entidad. (Solo uso profesional no para usuario final).
+             * @param newSprite Nuevo sprite.
+             */
+            void editSprite(std::vector<Pixel> newSprite);
     };
 
     /**
@@ -122,9 +127,10 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             void positionInitializer(EGE::CORE::EntityId id,int x, int y);
 
             /**
-             * @brief Método que agrega una entidas a entities.
+             * @brief Método que agrega una entida a entities.
+             * @return Identificador de la entidad.
              */
-            int addEntity();
+            EGE::CORE::EntityId addEntity();
     };
 
 }

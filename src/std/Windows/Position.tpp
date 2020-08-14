@@ -32,7 +32,7 @@ namespace EGE::STD::TERMINAL::WINDOWS{
         return this -> position; 
     }
 
-    std::tuple<int,int> *Position::getFirstPosition(){
+    std::tuple<int,int> *Position::getFisrtPosition(){
         
         return &this -> firstPosition;
     }
