@@ -1,18 +1,8 @@
 #include <iostream>
-//#include <thread>
+#include <windows.h>
 
 #include <core/Core.hpp>
-
-#include <std/Windows/WindowsTerminal.tpp>
-#include <std/Windows/Sprite.tpp>
-#include <std/Windows/Position.tpp>
-#include <std/Windows/Controller.tpp>
-#include <std/Windows/Input.tpp>
-#include <std/Windows/keyDefinition.hpp>
-#include <std/Windows/systemVisualizeEntity.tpp>
-#include <std/Windows/systemDisplacementEntity.tpp>
-#include <std/Windows/systemGenericCollition.tpp>
-#include <std/Windows/systemKeyInverter.tpp>
+#include <std/Windows/WindowsSTD.hpp>
 
 #define colorTerminal 10
 #define colorTablero 6
@@ -47,13 +37,13 @@ class bomba : public EGE::CORE::Entity<bomba>{
 class managerBomba : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomba>{
     private:
         int bombas[3];
+
     public:
-        #if 1
         void createBombs(){
             for( int i = 0; i < 3; i++ ){
                 bombas[i] = this -> addEntity();
                 this -> spriteInitializer(bombas[i],3,"bomba");
-                //this -> positionInitializer(bombas[i], 1,1);
+                this -> positionInitializer(bombas[i], 1,1);
             }
         }
 
@@ -67,11 +57,16 @@ class managerBomba : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomba>{
             return -1;
         }
 
-        void explodeBomb( int id, EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerBomba> *viewBomba ){
+        void explodeBomb(int id, EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerBomba> *viewBomba ){
             auto bombEntity = this -> template getEntity<bomba>( id );
             viewBomba->viewColor( id, this, colorBomba, bombEntity->setVisible(true) );
             Sleep(1000);
             viewBomba->view( id, this,  bombEntity->setVisible( false ) );
+        }
+        
+        #if 0
+        DWORD WINAPI ThreadFunc( LPVOID lpParams ) {
+            return 0;
         }
         #endif
 };
@@ -83,6 +78,7 @@ class bomberMan : public EGE::CORE::Entity<bomberMan>{
 };
 
 class managerBomberMan : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomberMan>{};
+
 
 int main(){
     /*Se crea el tablero del juego*/
@@ -119,7 +115,9 @@ int main(){
     EGE::STD::TERMINAL::WINDOWS::systemDisplacementEntity<managerBomberMan> dpBomberMan;
 
     /*Creamos el sistema de colision entre las entidades*/
-    EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerTablero,managerBomberMan> sysCollition;
+    //EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerBomberMan,mTerminal> sysBombaCollition;
+    EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerTablero,managerBomberMan> sysBomberManCollition;
+    EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerTablero,managerBomba> sysBombaCollition;
     EGE::STD::TERMINAL::WINDOWS::systemKeyInverter inverter;
 
 
@@ -150,7 +148,7 @@ int main(){
         /*Uso del sistema de colision*/
         #if 1
         if(Tecla != 0){
-            if(sysCollition.collition(bomberman,&mTablero,&mBomberMan)){
+            if(sysBomberManCollition.collition(bomberman,&mTablero,&mBomberMan)){
                 dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
             }
             else if(Tecla == 'e' || Tecla == 'E'){
@@ -159,7 +157,6 @@ int main(){
             
                 int x = std::get<0>(*firstPosition);
                 int y = std::get<1>(*firstPosition);
-                
                 
                 switch (lastKey){
                     case UP:
@@ -176,18 +173,29 @@ int main(){
                         break;
                 }
                 
+                #if 0
+                HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL );
+                    if (thread == NULL){}
+                    else{
+     	                std::cout<<"Error"<< GetLastError()<< std::endl;
+                    }
+                CloseHandle( thread );
+                #endif
+
+                //mBomba.explodeBomb( &viewBomba );
+                
                 auto availableBomb = mBomba.getAvailableBomb();
                 if( availableBomb != -1 ){
-                    mBomba.positionInitializer(availableBomb, x, y);
-                    //std::thread t1( mBomba.explodeBomb, availableBomb, &viewBomba );
-                    mBomba.explodeBomb( availableBomb, &viewBomba );
+                    mBomba.resetPosition(availableBomb, x, y);
+                    if ( !sysBombaCollition.collition(availableBomb, &mTablero, &mBomba) )
+                        mBomba.explodeBomb( availableBomb, &viewBomba );
                 }
             }
         }
         #endif
         /*Pintamos al jugador*/
         viewBomberMan.viewColor(bomberman,&mBomberMan,colorBomberMan, true);
-        viewTablero.viewColor(tablero,&mTablero,colorTablero,true);
+        viewTablero.viewColor( tablero, &mTablero, colorTablero, true );
 
         /*Espera del juego*/
         Sleep(10);
