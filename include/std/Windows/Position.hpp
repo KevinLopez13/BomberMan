@@ -67,10 +67,18 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             std::tuple<int,int> *getFisrtPosition();
 
             /**
-             * @brief Método para actualizar la posisición a la entidad.
+             * @brief Método para actualizar la posición a la entidad.
              * @param void Función para cambiar la posicion del elemento.
              */
             void updatePosition(std::vector<Pixel> sprite);
+
+            /**
+             * @brief Método que reinicia la posición a partir de las nuevas nuevas coordenadas.
+             * @param sprite Vector con el sprite para calcular bien las posiciones en terminal.
+             * @param x Posición inicial de la entidad en x.
+             * @param y Posición inicial de la entidad en y.
+             */
+            void resetPosition(std::vector<Pixel> sprite, int x, int y);
     };
 
     /**

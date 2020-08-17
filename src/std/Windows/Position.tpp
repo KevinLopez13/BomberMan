@@ -46,6 +46,15 @@ namespace EGE::STD::TERMINAL::WINDOWS{
         }
     }
 
+    void Position::resetPosition( std::vector<Pixel> sprite, int x, int y){
+        this -> position.clear();
+        this -> firstPosition = std::make_pair(x,y);
+
+        for(int i = 0; i<this -> size; i++){
+            position.push_back(std::make_pair(sprite[i].getX() + x,sprite[i].getY()+y));
+        }
+    }
+
     template<typename mType>
     void mPosition<mType>::positionInitializer(EGE::CORE::EntityId id, int x, int y){
         auto posicion = this -> template getComponent<EGE::STD::TERMINAL::WINDOWS::Position>(id);
