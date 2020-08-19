@@ -38,12 +38,19 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             ~Position();
 
             /**
-             * @brief Metodo para iniciar la posicion de una entidad.
+             * @brief Método para iniciar la posicion de una entidad.
              * @param size Tamaño del arreglo de posiciones.
              * @param x Posición inicial de la entidad en x.
              * @param y Posición inicial de la entidad en y.
              */
             void positionInitializer(int size,int x,int y);
+
+            /**
+             * @brief Método que reseta la posición de uan entidad.
+             * @param x Posición inicial de la entidad en x.
+             * @param y Posición inicial de la entidad en y.
+             */
+            void positionReset(int x, int y);
 
             /**
              * @brief Metodo para iniciar la posicion de le entidad con sprite.
@@ -53,6 +60,14 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @param y Posición inicial de la entidad en y.
              */
             void positionInitiaizerSprite(int size,std::vector<Pixel> sprite,int x, int y);
+
+            /**
+             * @brief Método que resetea la posición de un sprite.
+             * @param sprite Vector con el sprite para calcular bien las posiciones en terminal.
+             * @param x Posición inicial de la entidad en x.
+             * @param y Posición inicial de la entidad en y.
+             */
+            void positionResetSprite(std::vector<Pixel> sprite, int x, int y);
 
             /**
              * @brief Método para obtener la posición de la entidad
@@ -67,18 +82,10 @@ namespace EGE::STD::TERMINAL::WINDOWS{
             std::tuple<int,int> *getFisrtPosition();
 
             /**
-             * @brief Método para actualizar la posición a la entidad.
+             * @brief Método para actualizar la posisición a la entidad.
              * @param void Función para cambiar la posicion del elemento.
              */
             void updatePosition(std::vector<Pixel> sprite);
-
-            /**
-             * @brief Método que reinicia la posición a partir de las nuevas nuevas coordenadas.
-             * @param sprite Vector con el sprite para calcular bien las posiciones en terminal.
-             * @param x Posición inicial de la entidad en x.
-             * @param y Posición inicial de la entidad en y.
-             */
-            void resetPosition(std::vector<Pixel> sprite, int x, int y);
     };
 
     /**
