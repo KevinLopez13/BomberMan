@@ -1,13 +1,17 @@
 #include <iostream>
 #include <windows.h>
+#include <time.h>
 
 #include <core/Core.hpp>
 #include <std/Windows/WindowsSTD.hpp>
+
+#define ESTW EGE::STD::TERMINAL::WINDOWS
 
 #define colorTerminal 10
 #define colorTablero 6
 #define colorBomberMan 9
 #define colorBomba 4
+#define timeBomb 3
 
 /*Clase tablero y su administrador.*/
 class tablero :public EGE::CORE::Entity<tablero>{
@@ -15,12 +19,13 @@ class tablero :public EGE::CORE::Entity<tablero>{
         tablero(int id): Entity(id){}
 };
 
-class managerTablero : public EGE::STD::TERMINAL::WINDOWS::mSprite<tablero>{};
+class managerTablero : public ESTW::mSprite<tablero>{};
 
 /*Clase bomba y su administrador.*/
 class bomba : public EGE::CORE::Entity<bomba>{
     private:
         bool visible = false;
+        time_t inicio, fin;
     public:
         bomba(int id) : Entity(id){}
 
@@ -32,44 +37,18 @@ class bomba : public EGE::CORE::Entity<bomba>{
             this->visible = v;
             return visible;
         }
+
+        void initTime(){
+            inicio = time(NULL);
+        }
+
+        time_t getTime(){
+            fin = time(NULL);
+            return fin - inicio;
+        }
 };
 
-class managerBomba : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomba>{
-    private:
-        int bombas[3];
-
-    public:
-        void createBombs(){
-            for( int i = 0; i < 3; i++ ){
-                bombas[i] = this -> addEntity();
-                this -> spriteInitializer(bombas[i],3,"bomba");
-                this -> positionInitializer(bombas[i], 1,1);
-            }
-        }
-
-        int getAvailableBomb(){
-            for( auto id : bombas ){
-                auto bombEntity = this -> template getEntity<bomba>( id );
-                if( !bombEntity->isVisible() ){
-                    return id;
-                }
-            }
-            return -1;
-        }
-
-        void explodeBomb(int id, EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerBomba> *viewBomba ){
-            auto bombEntity = this -> template getEntity<bomba>( id );
-            viewBomba->viewColor( id, this, colorBomba, bombEntity->setVisible(true) );
-            Sleep(1000);
-            viewBomba->view( id, this,  bombEntity->setVisible( false ) );
-        }
-        
-        #if 0
-        DWORD WINAPI ThreadFunc( LPVOID lpParams ) {
-            return 0;
-        }
-        #endif
-};
+class managerBomba : public ESTW::mSprite<bomba>{};
 
 /*Clase bomberMan y su administrador.*/
 class bomberMan : public EGE::CORE::Entity<bomberMan>{
@@ -77,12 +56,54 @@ class bomberMan : public EGE::CORE::Entity<bomberMan>{
         bomberMan( int id ) : Entity( id ){}
 };
 
-class managerBomberMan : public EGE::STD::TERMINAL::WINDOWS::mSprite<bomberMan>{};
+class managerBomberMan : public ESTW::mSprite<bomberMan>{};
 
+/*Sistema que administra las bombas.*/
+class bombSystem : public EGE::CORE::System<managerBomba>{
+    private:
+        int bombas[3];
+        bool someVisible = false;
+    public:
+        void createBombs( managerBomba *mBomba ){
+            for( int i = 0; i < 3; i++ ){
+                bombas[i] = mBomba -> addEntity();
+                mBomba -> spriteInitializer(bombas[i],3,"bomba");
+                mBomba -> positionInitializer(bombas[i], 1,1);
+            }
+        }
+
+        int getAvailableBomb( managerBomba *mBomba ){
+            for( auto id : bombas ){
+                auto bombEntity = mBomba -> template getEntity<bomba>( id );
+                if( !bombEntity->isVisible() ){
+                    return id;
+                }
+            }
+            return -1;
+        }
+
+        void updateBombs( managerBomba *mBomba, ESTW::systemVisualizeEntity<managerBomba> *viewBomba){
+            for( auto id : bombas ){
+                auto bombEntity = mBomba -> template getEntity<bomba>( id );
+                time_t timeToExplode = bombEntity->getTime();
+                
+                if( bombEntity->isVisible() && timeToExplode >= timeBomb ){
+                    /*Explode bomb*/
+                    viewBomba->view( id, mBomba, bombEntity->setVisible( false ) );
+                }
+            }
+        }
+
+        void setBomb(int id, managerBomba *mBomba, ESTW::systemVisualizeEntity<managerBomba> *viewBomba ){
+            auto bombEntity =  mBomba -> template getEntity<bomba>( id );
+            bombEntity->initTime();
+            viewBomba->viewColor( id, mBomba, colorBomba, bombEntity->setVisible(true) );
+        }
+};
 
 int main(){
     /*Se crea el tablero del juego*/
-    EGE::STD::TERMINAL::WINDOWS::mTerminal tm;
+    ESTW::mTerminal tm;
     auto terminal = tm.addEntity(22,22);
     
     /*Creamos los manager de las entidades del juego*/
@@ -93,7 +114,10 @@ int main(){
     /*Creamos a las entidades*/
     auto tablero = mTablero.addEntity();
     auto bomberman = mBomberMan.addEntity();
-    mBomba.createBombs();
+
+    /*Creamos el systema administrador de bombas.*/
+    bombSystem bSystem;
+    bSystem.createBombs( &mBomba );
 
     /*Agregamos e inicializamos sus componentes*/
     mTablero.spriteInitializer(tablero,21,"tablero");
@@ -107,18 +131,22 @@ int main(){
     EGE::STD::TERMINAL::WINDOWS::systemInput entrada;
 
     /*Sistemas de visualizacion para las entidades.*/
-    EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerTablero> viewTablero;
-    EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerBomberMan> viewBomberMan;
-    EGE::STD::TERMINAL::WINDOWS::systemVisualizeEntity<managerBomba> viewBomba;
+    ESTW::systemVisualizeEntity<managerTablero> viewTablero;
+    ESTW::systemVisualizeEntity<managerBomberMan> viewBomberMan;
+    ESTW::systemVisualizeEntity<managerBomba> viewBomba;
 
     /*Sistemas de desplazamiento para las entidades.*/
-    EGE::STD::TERMINAL::WINDOWS::systemDisplacementEntity<managerBomberMan> dpBomberMan;
+    ESTW::systemDisplacementEntity<managerBomberMan> dpBomberMan;
 
     /*Creamos el sistema de colision entre las entidades*/
-    //EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerBomberMan,mTerminal> sysBombaCollition;
-    EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerTablero,managerBomberMan> sysBomberManCollition;
-    EGE::STD::TERMINAL::WINDOWS::systemGenericCollition<managerTablero,managerBomba> sysBombaCollition;
-    EGE::STD::TERMINAL::WINDOWS::systemKeyInverter inverter;
+    ESTW::systemGenericCollition< managerBomberMan, managerTablero > sysColl_BMan_Tab;
+    ESTW::systemGenericCollition< managerBomba, managerTablero > sysColl_Bomb_Tab;
+    ESTW::systemGenericCollition< managerBomberMan, managerBomba > sysColl_BMan_Bomb;
+    ESTW::collitionTerminal< managerBomba > sysColl_Terminal;
+    ESTW::systemKeyInverter inverter;
+
+    /*Sistema de reset para las bombas.*/
+    ESTW::systemPositionReset<managerBomba> resetBomb; 
 
 
     /*Inicalizamos a la  terminal y al metedo de salida del juego*/
@@ -148,11 +176,11 @@ int main(){
         /*Uso del sistema de colision*/
         #if 1
         if(Tecla != 0){
-            if(sysBomberManCollition.collition(bomberman,&mTablero,&mBomberMan)){
+            if( sysColl_BMan_Tab.collition( bomberman, &mBomberMan, &mTablero )){
                 dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
             }
             else if(Tecla == 'e' || Tecla == 'E'){
-                auto positionBomberMan = mBomberMan.getComponent<EGE::STD::TERMINAL::WINDOWS::Position>(bomberman);
+                auto positionBomberMan = mBomberMan.getComponent<ESTW::Position>(bomberman);
                 auto firstPosition = positionBomberMan -> getFisrtPosition();
             
                 int x = std::get<0>(*firstPosition);
@@ -172,33 +200,27 @@ int main(){
                         x -= 3;
                         break;
                 }
-                
-                #if 0
-                HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL );
-                    if (thread == NULL){}
-                    else{
-     	                std::cout<<"Error"<< GetLastError()<< std::endl;
-                    }
-                CloseHandle( thread );
-                #endif
 
-                //mBomba.explodeBomb( &viewBomba );
-                
-                auto availableBomb = mBomba.getAvailableBomb();
+                auto availableBomb = bSystem.getAvailableBomb( &mBomba );
                 if( availableBomb != -1 ){
-                    mBomba.resetPosition(availableBomb, x, y);
-                    if ( !sysBombaCollition.collition(availableBomb, &mTablero, &mBomba) )
-                        mBomba.explodeBomb( availableBomb, &viewBomba );
+                    resetBomb.positionResetSprite(availableBomb, &mBomba, x, y);
+
+                    if ( !sysColl_Bomb_Tab.collition(availableBomb, &mBomba, &mTablero) and
+                            !sysColl_Terminal.update(availableBomb, &mBomba) ){
+                        bSystem.setBomb( availableBomb, &mBomba, &viewBomba );
+                    }
                 }
             }
         }
         #endif
-        /*Pintamos al jugador*/
+        /*Actualizamos bombas.*/
+        bSystem.updateBombs( &mBomba, &viewBomba );
+        /*Se pinta al jugador y al tablero.*/
         viewBomberMan.viewColor(bomberman,&mBomberMan,colorBomberMan, true);
         viewTablero.viewColor( tablero, &mTablero, colorTablero, true );
 
         /*Espera del juego*/
-        Sleep(10);
+        Sleep(5);
     }
     #endif
 }
