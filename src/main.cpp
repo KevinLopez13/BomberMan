@@ -82,6 +82,11 @@ class bombSystem : public EGE::CORE::System<managerBomba>{
             return -1;
         }
 
+        bool isVisible( int id, managerBomba *mBomba){
+            auto bombEntity = mBomba -> template getEntity<bomba>( id );
+            return bombEntity -> isVisible();
+        }
+
         void updateBombs( managerBomba *mBomba, ESTW::systemVisualizeEntity<managerBomba> *viewBomba){
             for( auto id : bombas ){
                 auto bombEntity = mBomba -> template getEntity<bomba>( id );
@@ -90,6 +95,9 @@ class bombSystem : public EGE::CORE::System<managerBomba>{
                 if( bombEntity->isVisible() && timeToExplode >= timeBomb ){
                     /*Explode bomb*/
                     viewBomba->view( id, mBomba, bombEntity->setVisible( false ) );
+                }
+                else{
+                    viewBomba->viewColor( id, mBomba, colorBomba, bombEntity->isVisible() );
                 }
             }
         }
@@ -142,6 +150,7 @@ int main(){
     ESTW::systemGenericCollition< managerBomberMan, managerTablero > sysColl_BMan_Tab;
     ESTW::systemGenericCollition< managerBomba, managerTablero > sysColl_Bomb_Tab;
     ESTW::systemGenericCollition< managerBomberMan, managerBomba > sysColl_BMan_Bomb;
+    ESTW::systemGenericCollition< managerBomba, managerBomberMan > sysColl_Bomb_BMan;
     ESTW::collitionTerminal< managerBomba > sysColl_Terminal;
     ESTW::systemKeyInverter inverter;
 
@@ -156,6 +165,7 @@ int main(){
     viewTablero.viewColor(tablero,&mTablero,colorTablero, true);
 
     char Tecla = 0;
+    int idBombCollition;
 
     #if 1
     /*Bucle del juego*/
@@ -177,6 +187,10 @@ int main(){
         #if 1
         if(Tecla != 0){
             if( sysColl_BMan_Tab.collition( bomberman, &mBomberMan, &mTablero )){
+                dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
+            }
+            else if( sysColl_BMan_Bomb.collitionId( bomberman, &mBomberMan, &mBomba, &idBombCollition ) &&
+                    bSystem.isVisible(idBombCollition, &mBomba ) ){
                 dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
             }
             else if(Tecla == 'e' || Tecla == 'E'){
@@ -215,6 +229,7 @@ int main(){
         #endif
         /*Actualizamos bombas.*/
         bSystem.updateBombs( &mBomba, &viewBomba );
+
         /*Se pinta al jugador y al tablero.*/
         viewBomberMan.viewColor(bomberman,&mBomberMan,colorBomberMan, true);
         viewTablero.viewColor( tablero, &mTablero, colorTablero, true );
