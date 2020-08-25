@@ -3,7 +3,7 @@
 #include <time.h>
 
 #include <core/Core.hpp>
-#include <std/Windows/WindowsSTD.hpp>
+#include <std/Windows/Others/WindowsSTD.hpp>
 
 #define ESTW EGE::STD::TERMINAL::WINDOWS
 
@@ -11,7 +11,9 @@
 #define colorTablero 6
 #define colorBomberMan 9
 #define colorBomba 4
-#define timeBomb 3
+
+#define maxBombs 3
+#define delayBombs 4
 
 /*Clase tablero y su administrador.*/
 class tablero :public EGE::CORE::Entity<tablero>{
@@ -58,14 +60,25 @@ class bomberMan : public EGE::CORE::Entity<bomberMan>{
 
 class managerBomberMan : public ESTW::mSprite<bomberMan>{};
 
+/*Sistema que regula el movimiento del bomberman.*/
+class bomberSystem : public EGE::CORE::System<managerBomberMan>{
+    public:
+        void move(ESTW::systemDisplacementEntity<managerBomberMan> *dpBomberMan,
+                char Tecla, int bomberman, managerBomberMan *mBomberMan){
+            for( int i = 0; i < 3; i++){
+                dpBomberMan->update( Tecla, bomberman, mBomberMan, ARROWS);
+            }
+        }
+};
+
 /*Sistema que administra las bombas.*/
 class bombSystem : public EGE::CORE::System<managerBomba>{
     private:
-        int bombas[3];
+        int bombas[ maxBombs ];
         bool someVisible = false;
     public:
         void createBombs( managerBomba *mBomba ){
-            for( int i = 0; i < 3; i++ ){
+            for( int i = 0; i < maxBombs; i++ ){
                 bombas[i] = mBomba -> addEntity();
                 mBomba -> spriteInitializer(bombas[i],3,"bomba");
                 mBomba -> positionInitializer(bombas[i], 1,1);
@@ -92,7 +105,7 @@ class bombSystem : public EGE::CORE::System<managerBomba>{
                 auto bombEntity = mBomba -> template getEntity<bomba>( id );
                 time_t timeToExplode = bombEntity->getTime();
                 
-                if( bombEntity->isVisible() && timeToExplode >= timeBomb ){
+                if( bombEntity->isVisible() && timeToExplode >= delayBombs ){
                     /*Explode bomb*/
                     viewBomba->view( id, mBomba, bombEntity->setVisible( false ) );
                 }
@@ -123,7 +136,10 @@ int main(){
     auto tablero = mTablero.addEntity();
     auto bomberman = mBomberMan.addEntity();
 
-    /*Creamos el systema administrador de bombas.*/
+    /*Creamos el sistema administrador de bomberman*/
+    bomberSystem bmSystem;
+
+    /*Creamos el sistema administrador de bombas.*/
     bombSystem bSystem;
     bSystem.createBombs( &mBomba );
 
@@ -151,7 +167,7 @@ int main(){
     ESTW::systemGenericCollition< managerBomba, managerTablero > sysColl_Bomb_Tab;
     ESTW::systemGenericCollition< managerBomberMan, managerBomba > sysColl_BMan_Bomb;
     ESTW::systemGenericCollition< managerBomba, managerBomberMan > sysColl_Bomb_BMan;
-    ESTW::collitionTerminal< managerBomba > sysColl_Terminal;
+    ESTW::systemCollitionTerminal< managerBomba > sysColl_Terminal;
     ESTW::systemKeyInverter inverter;
 
     /*Sistema de reset para las bombas.*/
@@ -181,21 +197,25 @@ int main(){
             }
         }
         /*Movemos al jugador*/
-        dpBomberMan.update(Tecla,bomberman,&mBomberMan,ARROWS);  
+        //dpBomberMan.update(Tecla,bomberman,&mBomberMan,ARROWS); 
+        bmSystem.move( &dpBomberMan, Tecla, bomberman, &mBomberMan);
 
         /*Uso del sistema de colision*/
         #if 1
         if(Tecla != 0){
             if( sysColl_BMan_Tab.collition( bomberman, &mBomberMan, &mTablero )){
-                dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
+                //dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
+                bmSystem.move( &dpBomberMan, inverter.update(Tecla,ARROWS), bomberman, &mBomberMan);
             }
             else if( sysColl_BMan_Bomb.collitionId( bomberman, &mBomberMan, &mBomba, &idBombCollition ) &&
                     bSystem.isVisible(idBombCollition, &mBomba ) ){
-                dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
+                //dpBomberMan.update(inverter.update(Tecla,ARROWS),bomberman,&mBomberMan,ARROWS);
+                bmSystem.move( &dpBomberMan, inverter.update(Tecla,ARROWS), bomberman, &mBomberMan);
+
             }
             else if(Tecla == 'e' || Tecla == 'E'){
                 auto positionBomberMan = mBomberMan.getComponent<ESTW::Position>(bomberman);
-                auto firstPosition = positionBomberMan -> getFisrtPosition();
+                auto firstPosition = positionBomberMan -> getFirstPosition();
             
                 int x = std::get<0>(*firstPosition);
                 int y = std::get<1>(*firstPosition);
