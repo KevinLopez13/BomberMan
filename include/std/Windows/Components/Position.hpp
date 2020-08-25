@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <tuple>
-#include <std/Windows/Pixel.tpp>
+#include <std/Windows/Others/Pixel.tpp>
 
 namespace EGE::STD::TERMINAL::WINDOWS{
 
@@ -79,7 +79,7 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @brief Método que retorna la posición inicial en la terminal.
              * @return Tupla con la posición inicial en terminal.
              */
-            std::tuple<int,int> *getFisrtPosition();
+            std::tuple<int,int> *getFirstPosition();
 
             /**
              * @brief Método para actualizar la posisición a la entidad.

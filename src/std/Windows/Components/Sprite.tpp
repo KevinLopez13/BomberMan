@@ -1,7 +1,7 @@
 #ifndef SPRITE_TPP
 #define SPRITE_TPP
 
-#include <std/Windows/Sprite.hpp>
+#include <std/Windows/Components/Sprite.hpp>
 
 namespace EGE::STD::TERMINAL::WINDOWS{
 
@@ -138,14 +138,6 @@ namespace EGE::STD::TERMINAL::WINDOWS{
         auto sprite = this -> template getComponent<Sprite>(id);
         auto position = this -> template getComponent<EGE::STD::TERMINAL::WINDOWS::Position>(id);
         position -> positionInitiaizerSprite(sprite ->getSizeSprite(),sprite -> getSprite(),x,y);
-    }
-
-    template<typename mType>
-    void mSprite<mType>::resetPosition(EGE::CORE::EntityId id, int x, int y ){
-        auto sprite = this -> template getComponent<Sprite>(id);
-        auto position = this -> template getComponent<EGE::STD::TERMINAL::WINDOWS::Position>(id);
-        position -> resetPosition( sprite -> getSprite(),x,y);
-
     }
 
     template<typename mType>

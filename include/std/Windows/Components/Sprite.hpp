@@ -2,10 +2,10 @@
 #define SPRITE_HPP
 
 #include <core/Component.tpp>
-#include <std/Windows/Pixel.tpp>
+#include <std/Windows/Others/Pixel.tpp>
 #include <core/Manager.tpp>
-#include <std/Windows/Controller.tpp>
-#include <std/Windows/WindowsTerminal.hpp>
+#include <std/Windows/Components/Controller.tpp>
+#include <std/Windows/Others/WindowsTerminal.hpp>
 #include <core/Alias.hpp>
 #include <vector>
 #include <fstream>
@@ -119,19 +119,12 @@ namespace EGE::STD::TERMINAL::WINDOWS{
 
             /**
              * @brief Metodo para iniciar la posicion del sprite.
-             * @param id Id de la entidad creada.
+             * 
+             * @param size Tamaño del arreglo de posiciones.
              * @param x Posición inicial de la entidad en x.
              * @param y Posición inicial de la entidad en y.
              */
             void positionInitializer(EGE::CORE::EntityId id,int x, int y);
-
-            /**
-             * @brief Metodo para reiniciar la posicion del sprite.
-             * @param id Identificador de la entidad.
-             * @param x Posición inicial de la entidad en x.
-             * @param y Posición inicial de la entidad en y.
-             */
-            void resetPosition(EGE::CORE::EntityId id, int x, int y);
 
             /**
              * @brief Método que agrega una entida a entities.

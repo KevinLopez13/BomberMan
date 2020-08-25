@@ -2,11 +2,11 @@
 #define SYSTEMDISPLACEMENTENTITY_HPP
 
 #include <core/System.hpp>
-#include <std/Windows/collitionTerminal.tpp>
-#include <std/Windows/moveEntity.tpp>
-#include <std/Windows/systemVisualizeEntity.tpp>
+#include <std/Windows/Systems/systemCollitionTerminal.tpp>
+#include <std/Windows/systems/systemmoveEntity.tpp>
+#include <std/Windows/Systems/systemVisualizeEntity.tpp>
 #include <core/Alias.hpp>
-#include <std/Windows/systemKeyInverter.tpp>
+#include <std/Windows/Systems/systemKeyInverter.tpp>
 
 namespace EGE::STD::TERMINAL::WINDOWS{
 
@@ -26,8 +26,9 @@ namespace EGE::STD::TERMINAL::WINDOWS{
              * @param id Identificador de la entidad que se movera.
              * @param gameContext Manager de la entidad en cuestión.
              * @param control Sistema de teclas que se usara para mover a la entidad.
+             * @return True si choco contra los marcos de la terminal en caso contrario false. 
              */
-            void update(char key,EGE::CORE::EntityId id,mType *gameContext,EGE::CORE::ControlType control);
+            bool update(char key,EGE::CORE::EntityId id,mType *gameContext,EGE::CORE::ControlType control);
     };
 }
 #endif

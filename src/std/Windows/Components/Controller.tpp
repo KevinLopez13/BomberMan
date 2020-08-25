@@ -1,13 +1,13 @@
 #ifndef CONTROLLER_TPP
 #define CONTROLLER_TPP
 
-#include <std/Windows/Controller.hpp>
+#include <std/Windows/Components/Controller.hpp>
 #include <tuple>
 
 namespace EGE::STD::TERMINAL::WINDOWS{
 
     void Controller::move(char key,Position *position,std::vector<Pixel> sprite){
-        auto firstTuple = position -> getFisrtPosition();
+        auto firstTuple = position -> getFirstPosition();
 
         switch(key){
             case 'w':
